@@ -2,20 +2,37 @@ package ui.george.lightbox
 
 import javafx.application.Application
 import javafx.scene.Scene
-import javafx.scene.control.*
-import javafx.scene.layout.BorderPane
+import javafx.scene.layout.Priority
+import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import ui.george.lightbox.model.Model
+import ui.george.lightbox.view.LightboxCanvas
+import ui.george.lightbox.view.LightboxTools
+import ui.george.lightbox.view.StatusBar
 
 class Lightbox : Application() {
     override fun start(stage: Stage) {
-        val myModel = Model()
+        val myModel = Model
 
         stage.apply {
-            title = "Lightbox by George Wan"
-            scene = Scene(BorderPane().apply {
-                center = Button("Click me!")
-            }, 320.0, 240.0)
+            title = "Lightbox by g8wan"
+            scene = Scene(VBox().apply {
+                children.addAll(LightboxTools(myModel), LightboxCanvas(myModel), StatusBar(myModel))
+                minWidth = 700.0
+                minHeight = 360.0
+
+            }, 700.0, 360.0)
+            VBox.setVgrow(LightboxTools(myModel), Priority.NEVER)
+            VBox.setVgrow(LightboxCanvas(myModel), Priority.ALWAYS)
+            VBox.setVgrow(StatusBar(myModel), Priority.NEVER)
+            minWidth = 700.0
+            minHeight = 360.0
+            widthProperty().addListener { _, _, _ ->
+                myModel.setStageSize(width, height)
+            }
+            heightProperty().addListener { _, _, _ ->
+                myModel.setStageSize(width, height)
+            }
         }.show()
     }
 }

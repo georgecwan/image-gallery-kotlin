@@ -6,3 +6,8 @@ macOS Ventura 13.4.1
 
 Class structure for the MVC classes were taken from the "Extended MVC with JavaFX" project in the cs349-sample-code
 repository.
+
+The minimize, maximize, and restore buttons work as expected on my mac, but I am not sure if they will work on Windows
+machines since those buttons have different behaviours on Windows.
+
+Images used in this project were sourced from
