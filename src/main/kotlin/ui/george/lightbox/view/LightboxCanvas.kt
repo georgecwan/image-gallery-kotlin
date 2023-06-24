@@ -10,7 +10,6 @@ class LightboxCanvas(private val model: Model) : ScrollPane(), InvalidationListe
     val tile = TileCanvas(model)
 
     init {
-        maxHeight = Double.MAX_VALUE
         hbarPolicy = ScrollBarPolicy.AS_NEEDED
         model.addListener(this)
         invalidated(null)

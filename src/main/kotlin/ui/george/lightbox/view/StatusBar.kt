@@ -28,7 +28,7 @@ class StatusBar(private val model: Model) : AnchorPane(), InvalidationListener {
             "No image selected"
         }
         else {
-            "Current image: ${model.getSelectedImage()!!.url}"
+            "Current image: ${model.getSelectedImage()!!.first.url}"
         }
     }
 }

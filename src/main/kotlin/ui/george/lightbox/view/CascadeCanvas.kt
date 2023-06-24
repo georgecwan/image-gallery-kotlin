@@ -17,8 +17,11 @@ class CascadeCanvas(private val model: Model) : Canvas(), InvalidationListener {
         setOnMouseClicked {
             var selectedImage: Image? = null
             for ((image, details) in model.getImages()) {
-                if (details.x - image.width / 2 < it.x && it.x < details.x + image.width / 2 &&
-                    details.y - image.height / 2 < it.y && it.y < details.y + image.height / 2) {
+                val imgWidth = model.imageWidth
+                val imgHeight = model.imageHeight(image.width, image.height)
+                if (details.x - imgWidth / 2 < it.x && it.x < details.x + imgWidth / 2 &&
+                    details.y - imgHeight / 2 < it.y &&
+                    it.y < details.y + imgHeight / 2) {
                     selectedImage = image
                 }
             }
@@ -32,25 +35,58 @@ class CascadeCanvas(private val model: Model) : Canvas(), InvalidationListener {
             height = model.getStageSize().second - 86.0
         }
         graphicsContext2D.clearRect(0.0, 0.0, width, height)
-        graphicsContext2D.save()
-        val imageMap = model.getImages()
-        for ((image, details) in imageMap) {
-            if (details.x + image.width / 2 > width) {
-                width = details.x + image.width / 2 + 20.0
+        val images = model.getImages()
+        for ((image, details) in images) {
+            val imageWidth = model.imageWidth
+            val imageHeight = model.imageHeight(image.width, image.height)
+            if (details.x + imageWidth / 2 > width) {
+                width = details.x + imageWidth / 2 + 5.0
             }
-            if (details.y + image.height / 2 > height) {
-                height = details.y + image.height / 2 + 20.0
+            if (details.y + imageHeight / 2 > height) {
+                height = details.y + imageHeight / 2 + 5.0
             }
+            if (model.getSelectedImage() != Pair(image, details)) {
+                graphicsContext2D.apply {
+                    save()
+                    translate(details.x, details.y)
+                    rotate(details.angle)
+                    scale(details.scale, details.scale)
+                    drawImage(
+                        image,
+                        -imageWidth / 2,
+                        -imageHeight / 2,
+                        imageWidth,
+                        imageHeight
+                    )
+                    restore()
+                }
+            }
+        }
+        if (model.getSelectedImage() != null) {
+            val image = model.getSelectedImage()!!.first
+            val details = model.getSelectedImage()!!.second
             graphicsContext2D.apply {
+                val imageWidth = model.imageWidth
+                val imageHeight = model.imageHeight(image.width, image.height)
+                save()
                 translate(details.x, details.y)
                 rotate(details.angle)
                 scale(details.scale, details.scale)
-                drawImage(image, -image.width / 2, -image.height / 2, image.width, image.height)
-                if (model.getSelectedImage() == image) {
-                    stroke = Color.DEEPSKYBLUE
-                    lineWidth = 5.0
-                    strokeRect(-image.width / 2, -image.height / 2, image.width, image.height)
-                }
+                drawImage(
+                    image,
+                    -imageWidth / 2,
+                    -imageHeight / 2,
+                    imageWidth,
+                    imageHeight
+                )
+                stroke = Color.DEEPSKYBLUE
+                lineWidth = 5.0
+                strokeRect(
+                    -imageWidth / 2,
+                    -imageHeight / 2,
+                    imageWidth,
+                    imageHeight
+                )
                 restore()
             }
         }

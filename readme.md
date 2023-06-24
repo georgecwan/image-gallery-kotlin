@@ -10,4 +10,4 @@ repository.
 The minimize, maximize, and restore buttons work as expected on my mac, but I am not sure if they will work on Windows
 machines since those buttons have different behaviours on Windows.
 
-Images used in this project were sourced from
+Images used in this project (on the toolbar buttons) were sourced from [icons8](https://icons8.com/).

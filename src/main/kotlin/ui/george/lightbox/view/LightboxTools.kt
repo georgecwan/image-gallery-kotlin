@@ -17,97 +17,104 @@ class LightboxTools(private val model: Model) : ToolBar(), InvalidationListener 
         graphic =
             ImageView(
                 Image(
-                    Lightbox::class.java.getResource("new-file.png")!!.toString(),
-                    16.0, 16.0, true, true
+                    "new-file.png", 16.0, 16.0, true, true
                 )
             )
         minHeight = 28.0
         setOnAction {
             FileChooser().apply {
                 title = "Select image"
-                extensionFilters.add(FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.bmp"))
+                extensionFilters.add(FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.bmp"))
                 val file = showOpenDialog(this@button.scene.window)
                 if (file != null) {
                     val img = Image(file.toURI().toString())
+                    val imgWidth = model.imageWidth
+                    val imgHeight = model.imageHeight(img.width, img.height)
                     // Find random x and y to place the image at that isn't off-screen
                     val canvas = ((this@button.scene.root as VBox).children[1] as LightboxCanvas).cascade
-                    val wDiff = canvas.width - img.width
-                    val hDiff = canvas.height - img.height
+                    val wDiff = canvas.width - imgWidth - 10.0
+                    val hDiff = canvas.height - imgHeight - 10.0
                     model.addImage(
                         img,
-                        img.width / 2 + if (wDiff <= 0.0) 0.0 else Random.nextDouble() * wDiff,
-                        img.width / 2 + if (hDiff <= 0.0) 0.0 else Random.nextDouble() * hDiff
+                        5.0 + imgWidth / 2 + if (wDiff <= 0.0) 0.0 else Random.nextDouble() * wDiff,
+                        5.0 + imgHeight / 2 + if (hDiff <= 0.0) 0.0 else Random.nextDouble() * hDiff
                     )
                 }
             }
         }
     }
+
     private val delButton = Button("Del image").apply {
         graphic =
             ImageView(
                 Image(
-                    Lightbox::class.java.getResource("delete-file.png")!!.toString(),
-                    16.0, 16.0, true, true
+                    "delete-file.png", 16.0, 16.0, true, true
                 )
             )
         minHeight = 28.0
+        setOnAction { model.removeSelectedImage() }
     }
+
     private val rotateLButton = Button("Rotate Left").apply {
         graphic =
             ImageView(
                 Image(
-                    Lightbox::class.java.getResource("rotate-left.png")!!.toString(),
-                    16.0, 16.0, true, true
+                    "rotate-left.png", 16.0, 16.0, true, true
                 )
             )
         minHeight = 28.0
+        setOnAction { model.rotateSelectedImage(-10.0) }
     }
+
     private val rotateRButton = Button("Rotate Right").apply {
         graphic =
             ImageView(
                 Image(
-                    Lightbox::class.java.getResource("rotate-right.png")!!.toString(),
-                    16.0, 16.0, true, true
+                    "rotate-right.png", 16.0, 16.0, true, true
                 )
             )
         minHeight = 28.0
+        setOnAction { model.rotateSelectedImage(10.0) }
     }
+
     private val zoomIButton = Button("Zoom In").apply {
         graphic =
             ImageView(
                 Image(
-                    Lightbox::class.java.getResource("zoom-in.png")!!.toString(),
-                    16.0, 16.0, true, true
+                    "zoom-in.png", 16.0, 16.0, true, true
                 )
             )
         minHeight = 28.0
+        setOnAction { model.scaleSelectedImage(1.25) }
     }
+
     private val zoomOButton = Button("Zoom Out").apply {
         graphic =
             ImageView(
                 Image(
-                    Lightbox::class.java.getResource("zoom-out.png")!!.toString(),
-                    16.0, 16.0, true, true
+                    "zoom-out.png", 16.0, 16.0, true, true
                 )
             )
         minHeight = 28.0
+        setOnAction { model.scaleSelectedImage(0.75) }
     }
+
     private val resetButton = Button("Reset").apply {
         graphic =
             ImageView(
                 Image(
-                    Lightbox::class.java.getResource("reset.png")!!.toString(),
-                    16.0, 16.0, true, true
+                    "reset.png", 16.0, 16.0, true, true
                 )
             )
         minHeight = 28.0
+        setOnAction { model.resetSelectedImage() }
     }
+
     private val cascadeButton = ToggleButton("Cascade").apply {
         graphic =
             ImageView(
                 Image(
-                    Lightbox::class.java.getResource("cascade.png")!!.toString(),
-                    16.0, 16.0, true, true
+                    "cascade.png", 16.0, 16.0, true, true
                 )
             )
         minHeight = 28.0
@@ -115,12 +122,12 @@ class LightboxTools(private val model: Model) : ToolBar(), InvalidationListener 
             model.setViewMode(true)
         }
     }
+
     private val tileButton = ToggleButton("Tile").apply {
         graphic =
             ImageView(
                 Image(
-                    Lightbox::class.java.getResource("tile.png")!!.toString(),
-                    16.0, 16.0, true, true
+                    "tile.png", 16.0, 16.0, true, true
                 )
             )
         minHeight = 28.0
@@ -150,11 +157,12 @@ class LightboxTools(private val model: Model) : ToolBar(), InvalidationListener 
 
     // Update enabled status of the toolbar buttons
     override fun invalidated(observable: Observable?) {
-        rotateLButton.isDisable = !model.getViewMode() && model.getSelectedImage() == null
-        rotateRButton.isDisable = !model.getViewMode() && model.getSelectedImage() == null
-        zoomIButton.isDisable = !model.getViewMode() && model.getSelectedImage() == null
-        zoomOButton.isDisable = !model.getViewMode() && model.getSelectedImage() == null
-        resetButton.isDisable = !model.getViewMode() && model.getSelectedImage() == null
+        delButton.isDisable = model.getSelectedImage() == null
+        rotateLButton.isDisable = !model.getViewMode() || model.getSelectedImage() == null
+        rotateRButton.isDisable = !model.getViewMode() || model.getSelectedImage() == null
+        zoomIButton.isDisable = !model.getViewMode() || model.getSelectedImage() == null
+        zoomOButton.isDisable = !model.getViewMode() || model.getSelectedImage() == null
+        resetButton.isDisable = !model.getViewMode() || model.getSelectedImage() == null
         cascadeButton.isSelected = model.getViewMode()
         tileButton.isSelected = !model.getViewMode()
     }

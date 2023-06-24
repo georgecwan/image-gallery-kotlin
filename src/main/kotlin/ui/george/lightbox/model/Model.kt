@@ -52,7 +52,7 @@ object Model : Observable {
     }
 
     // List of images currently on canvas
-    private var images: HashMap<Image, imageProperties> = HashMap()
+    private val images: MutableList<Pair<Image, imageProperties>> = mutableListOf()
 
     // Currently selected image as index of images.keys
     private var selectedImage: Int? = null
@@ -60,7 +60,7 @@ object Model : Observable {
     /**
      * Returns the current list of images.
      */
-    fun getImages(): HashMap<Image, imageProperties> {
+    fun getImages(): List<Pair<Image, imageProperties>> {
         return images
     }
 
@@ -68,12 +68,12 @@ object Model : Observable {
      * Adds an image to the list of images and invalidates all added listeners.
      */
     fun addImage(newImage: Image, x: Double, y: Double) {
-        images[newImage] = object : imageProperties {
+        images.add(Pair(newImage, object : imageProperties {
             override var x: Double = x
             override var y: Double = y
             override var angle: Double = 0.0
             override var scale: Double = 1.0
-        }
+        }))
         views.forEach {
             it?.invalidated(this)
         }
@@ -89,18 +89,23 @@ object Model : Observable {
     /**
      * Get the currently selected image
      */
-    fun getSelectedImage(): Image? {
-        if (selectedImage == null) {
-            return null
-        }
-        return images.keys.elementAt(selectedImage!!)
+    fun getSelectedImage(): Pair<Image, imageProperties>? {
+        return images[selectedImage ?: return null]
     }
 
     /**
      * Sets the value of selectedImage and invalidates all added listeners.
      */
     fun setSelectedImage(newImage: Image?) {
-        selectedImage = newImage?.let { images.keys.indexOf(it) }
+        selectedImage = newImage?.let {
+            // Place selected image at end of list
+            val selectedPair: Pair<Image, imageProperties> = images.find {
+                it.first == newImage
+            }!!
+            images.remove(selectedPair)
+            images.add(selectedPair)
+            images.size - 1
+        }
         views.forEach { it?.invalidated(this) }
     }
 
@@ -108,8 +113,39 @@ object Model : Observable {
      * Remove selected image from images
      */
     fun removeSelectedImage() {
-        selectedImage?.let { images.remove(images.keys.elementAt(it)) }
+        selectedImage?.let { images.remove(images[it]) }
         selectedImage = null
+        views.forEach { it?.invalidated(this) }
+    }
+
+    /**
+     * Rotate selected image by specified angle
+     */
+    fun rotateSelectedImage(rotation: Double) {
+        selectedImage?.let {
+            images[it].second.angle += rotation
+        }
+        views.forEach { it?.invalidated(this) }
+    }
+
+    /**
+     * Scale selected image by specified factor
+     */
+    fun scaleSelectedImage(factor: Double) {
+        selectedImage?.let {
+            images[it].second.scale *= factor
+        }
+        views.forEach { it?.invalidated(this) }
+    }
+
+    /**
+     * Reset selected image to original size and orientation
+     */
+    fun resetSelectedImage() {
+        selectedImage?.let {
+            images[it].second.angle = 0.0
+            images[it].second.scale = 1.0
+        }
         views.forEach { it?.invalidated(this) }
     }
 
@@ -129,5 +165,15 @@ object Model : Observable {
     fun setStageSize(width: Double, height: Double) {
         stageSize = Pair(width, height)
         views.forEach { it?.invalidated(this) }
+    }
+
+
+    /**
+     * Image dimensions for canvas mode
+     */
+    const val imageWidth: Double = 250.0
+
+    fun imageHeight(width: Double, height: Double): Double {
+        return imageWidth / width * height
     }
 }
