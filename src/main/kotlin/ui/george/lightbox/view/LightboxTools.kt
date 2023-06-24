@@ -6,9 +6,8 @@ import javafx.geometry.Orientation
 import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
-import javafx.scene.layout.VBox
+import javafx.scene.layout.BorderPane
 import javafx.stage.FileChooser
-import ui.george.lightbox.Lightbox
 import ui.george.lightbox.model.Model
 import kotlin.random.Random
 
@@ -31,7 +30,7 @@ class LightboxTools(private val model: Model) : ToolBar(), InvalidationListener 
                     val imgWidth = model.imageWidth
                     val imgHeight = model.imageHeight(img.width, img.height)
                     // Find random x and y to place the image at that isn't off-screen
-                    val canvas = ((this@button.scene.root as VBox).children[1] as LightboxCanvas).cascade
+                    val canvas = ((this@button.scene.root as BorderPane).center as LightboxCanvas).cascade
                     val wDiff = canvas.width - imgWidth - 10.0
                     val hDiff = canvas.height - imgHeight - 10.0
                     model.addImage(

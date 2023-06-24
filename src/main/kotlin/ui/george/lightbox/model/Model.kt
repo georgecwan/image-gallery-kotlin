@@ -99,13 +99,29 @@ object Model : Observable {
     fun setSelectedImage(newImage: Image?) {
         selectedImage = newImage?.let {
             // Place selected image at end of list
-            val selectedPair: Pair<Image, imageProperties> = images.find {
-                it.first == newImage
-            }!!
+            images.indexOfFirst { it.first == newImage }
+        }
+        views.forEach { it?.invalidated(this) }
+    }
+
+    fun pushSelectedImageFront() {
+        if (selectedImage != null) {
+            val selectedPair = images[selectedImage!!]
             images.remove(selectedPair)
             images.add(selectedPair)
-            images.size - 1
+            selectedImage = images.size - 1
         }
+    }
+
+    /**
+     * Move selected image by amount x and y
+     */
+    fun moveSelectedImage(x: Double, y: Double) {
+        if (selectedImage == null) {
+            return
+        }
+        images[selectedImage!!].second.x += x
+        images[selectedImage!!].second.y += y
         views.forEach { it?.invalidated(this) }
     }
 

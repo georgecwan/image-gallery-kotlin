@@ -16,11 +16,13 @@ class LightboxCanvas(private val model: Model) : ScrollPane(), InvalidationListe
     }
 
     override fun invalidated(observable: Observable?) {
-        content = if (model.getViewMode()) {
-            cascade
+        if (model.getViewMode()) {
+            content = cascade
+            maxWidth = Double.MAX_VALUE
         }
         else {
-            tile
+            content = tile
+            maxWidth = model.getStageSize().first
         }
     }
 }

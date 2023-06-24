@@ -6,7 +6,6 @@ import javafx.scene.canvas.Canvas
 import javafx.scene.image.Image
 import javafx.scene.paint.Color
 import ui.george.lightbox.model.Model
-import kotlin.math.max
 
 class CascadeCanvas(private val model: Model) : Canvas(), InvalidationListener {
     init {
@@ -14,7 +13,8 @@ class CascadeCanvas(private val model: Model) : Canvas(), InvalidationListener {
         height = 300.0
         model.addListener(this)
         invalidated(null)
-        setOnMouseClicked {
+        var initialMousePos: Pair<Double, Double>? = null
+        setOnMousePressed {
             var selectedImage: Image? = null
             for ((image, details) in model.getImages()) {
                 val imgWidth = model.imageWidth
@@ -26,6 +26,12 @@ class CascadeCanvas(private val model: Model) : Canvas(), InvalidationListener {
                 }
             }
             model.setSelectedImage(selectedImage)
+            model.pushSelectedImageFront()
+            initialMousePos = Pair(it.x, it.y)
+        }
+        setOnMouseDragged {
+            model.moveSelectedImage(it.x - initialMousePos!!.first, it.y - initialMousePos!!.second)
+            initialMousePos = Pair(it.x, it.y)
         }
     }
 
