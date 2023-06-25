@@ -2,9 +2,13 @@ package ui.george.lightbox.view
 
 import javafx.beans.InvalidationListener
 import javafx.beans.Observable
+import javafx.geometry.Point2D
 import javafx.scene.canvas.Canvas
 import javafx.scene.image.Image
 import javafx.scene.paint.Color
+import javafx.scene.transform.Rotate
+import javafx.scene.transform.Scale
+import kotlin.math.max
 import ui.george.lightbox.model.Model
 
 class CascadeCanvas(private val model: Model) : Canvas(), InvalidationListener {
@@ -15,13 +19,16 @@ class CascadeCanvas(private val model: Model) : Canvas(), InvalidationListener {
         invalidated(null)
         var initialMousePos: Pair<Double, Double>? = null
         setOnMousePressed {
+            val cursorLocation = Point2D(it.x, it.y)
             var selectedImage: Image? = null
             for ((image, details) in model.getImages()) {
+                val rotation = Rotate(-details.angle, details.x, details.y)
+                val scaling = Scale(1 / details.scale, 1 / details.scale, details.x, details.y)
+                var transformedCursor = rotation.transform(scaling.transform(cursorLocation))
                 val imgWidth = model.imageWidth
                 val imgHeight = model.imageHeight(image.width, image.height)
-                if (details.x - imgWidth / 2 < it.x && it.x < details.x + imgWidth / 2 &&
-                    details.y - imgHeight / 2 < it.y &&
-                    it.y < details.y + imgHeight / 2) {
+                if (details.x - imgWidth / 2 < transformedCursor.x && transformedCursor.x < details.x + imgWidth / 2 &&
+                    details.y - imgHeight / 2 < transformedCursor.y && transformedCursor.y < details.y + imgHeight / 2) {
                     selectedImage = image
                 }
             }
@@ -36,10 +43,48 @@ class CascadeCanvas(private val model: Model) : Canvas(), InvalidationListener {
     }
 
     override fun invalidated(observable: Observable?) {
-        if (model.getStageSize().first > width || model.getStageSize().second > height) {
-            width = model.getStageSize().first - 20.0
-            height = model.getStageSize().second - 86.0
+        // Find limits of x and y needed to show images
+//        var minX: Double = 0.0
+//        var minY: Double = 0.0
+        var maxX = 0.0
+        var maxY = 0.0
+        for ((img, details) in model.getImages()) {
+            val imgWidth = model.imageWidth
+            val imgHeight = model.imageHeight(img.width, img.height)
+            val corners: Array<Point2D> = arrayOf(
+                Point2D(details.x - imgWidth / 2, details.y - imgHeight / 2),
+                Point2D(details.x + imgWidth / 2, details.y - imgHeight / 2),
+                Point2D(details.x - imgWidth / 2, details.y + imgHeight / 2),
+                Point2D(details.x + imgWidth / 2, details.y + imgHeight / 2)
+            )
+            val rotation = Rotate(details.angle, details.x, details.y)
+            val scaling = Scale(details.scale, details.scale, details.x, details.y)
+            corners.forEach {
+                val transformedCorner = rotation.transform(scaling.transform(it))
+//                if (transformedCorner.x < minX) {
+//                    minX = transformedCorner.x
+//                }
+                if (transformedCorner.x > maxX) {
+                    maxX = transformedCorner.x
+                }
+//                if (transformedCorner.y < minY) {
+//                    minY = transformedCorner.y
+//                }
+                if (transformedCorner.y > maxY) {
+                    maxY = transformedCorner.y
+                }
+            }
         }
+//        maxX -= minX
+//        maxY -= minY
+        // Translate all images so that they fit in positive x and y
+        // Decided not to do this because it would scroll the canvas infinitely when dragging into a corner
+//        model.getImages().forEach {
+//            it.second.x -= minX
+//            it.second.y -= minY
+//        }
+        width = max(maxX, model.getStageSize().first - 20.0)
+        height = max(maxY, model.getStageSize().second - 86.0)
         graphicsContext2D.clearRect(0.0, 0.0, width, height)
         val images = model.getImages()
         for ((image, details) in images) {

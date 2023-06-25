@@ -19,15 +19,15 @@ class Lightbox : Application() {
                 top = LightboxTools(myModel)
                 center = LightboxCanvas(myModel)
                 bottom = StatusBar(myModel)
-                minWidth = 700.0
-                minHeight = 320.0
+                minWidth = 550.0
+                minHeight = 360.0
 
-            }, 700.0, 360.0)
+            }, 850.0, 400.0)
 //            VBox.setVgrow(LightboxTools(myModel), Priority.NEVER)
 //            VBox.setVgrow(LightboxCanvas(myModel), Priority.ALWAYS)
 //            VBox.setVgrow(StatusBar(myModel), Priority.NEVER)
-            minWidth = 700.0
-            minHeight = 360.0
+            minWidth = 550.0
+            minHeight = 400.0
             widthProperty().addListener { _, _, _ ->
                 myModel.setStageSize(width, height)
             }
