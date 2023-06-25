@@ -14,7 +14,7 @@ class Lightbox : Application() {
         val myModel = Model
 
         stage.apply {
-            title = "Lightbox by g8wan"
+            title = "Lightbox by George Wan (g8wan)"
             scene = Scene(BorderPane().apply {
                 top = LightboxTools(myModel)
                 center = LightboxCanvas(myModel)
@@ -23,9 +23,6 @@ class Lightbox : Application() {
                 minHeight = 360.0
 
             }, 850.0, 400.0)
-//            VBox.setVgrow(LightboxTools(myModel), Priority.NEVER)
-//            VBox.setVgrow(LightboxCanvas(myModel), Priority.ALWAYS)
-//            VBox.setVgrow(StatusBar(myModel), Priority.NEVER)
             minWidth = 550.0
             minHeight = 400.0
             widthProperty().addListener { _, _, _ ->
